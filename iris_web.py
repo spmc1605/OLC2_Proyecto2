@@ -4,6 +4,7 @@ from os import sep
 from click import option
 from sklearn.metrics import r2_score
 from sklearn.linear_model import LinearRegression;
+from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error, r2_score;
 
 import matplotlib.pyplot as plt;
@@ -51,6 +52,9 @@ def main():
                      ['Seleccione una opción','Graficar puntos', 'Definir función de tendencia (lineal o polinomial)', 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)', 'Clasificar por Gauss o árboles de decisión o redes neuronales']) 
     if(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
         unidadPre= st.text_input("Ingrese la unidad de tiempo", "")
+
+    if(algoritmos == 'Regresión polinomial'):
+         grado = st.text_input("Ingrese el grado de la función Polinomial", "")
     
     Paramx = st.text_input("Ingrese el nombre del parametro X", "")
     Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
@@ -94,6 +98,8 @@ def main():
             if(ope == 'Graficar puntos'):
                 fig = plt.figure(figsize=(12,9))
                 plt.scatter(VarX, VarY, color='green')
+                plt.plot(VarX, Y_pred, color='blue')
+
                 st.subheader("Grafica de Puntos")
                 st.pyplot(fig)
             elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
@@ -101,22 +107,55 @@ def main():
                 st.success(linear_regression.predict([[int(unidadPre)]]))
             elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
                 st.subheader("Función de tendencia")
-                st.success(("y = ", linear_regression.coef_[0], "x + " ,linear_regression.intercept_))
-                st.success(("Coeficiente: ", linear_regression.coef_[0]))
-                st.success(("Intercepción: ", linear_regression.intercept_))
-                st.success(("r^2: ", r2))
-                st.success(('Error cuadrático:', mean_squared_error(VarY, Y_pred)))
+                st.success("y = " + str(linear_regression.coef_[0]) + "x + " + str(linear_regression.intercept_))
+                st.success("Coeficiente: " + str(linear_regression.coef_[0]) )
+                st.success("Intercepción: "+ str(linear_regression.intercept_))
+                st.success("r^2: "+ str(r2))
+                st.success('Error cuadrático:'+  str(mean_squared_error(VarY, Y_pred)))
              
             elif(ope == 'Clasificar por Gauss o árboles de decisión o redes neuronales'):
-                print('op4')
+                st.error("Operación no validad para este Algoritmo")
             else:
                 st.error("No selecciono ninguna Operación") 
 
         #Algoritmo de regresion Polinomial
-    
+        elif(algoritmos == 'Regresión polinomial'):
+            VarX = np.asarray(df[Paramx]).reshape(-1, 1)
+            VarY = df[Paramy]
+            polinomial = PolynomialFeatures(degree = int(grado))
+            X_trans= polinomial.fit_transform(VarX)
+            linear_regression = LinearRegression()
+            linear_regression.fit(X_trans,VarY)
+            Y_pred=linear_regression.predict(X_trans)
+            if(ope == 'Graficar puntos'):
+                fig = plt.figure(figsize=(12,9))
+                plt.scatter(VarX, VarY, color='green')
+                plt.plot(VarX, Y_pred, color='red')
+                st.subheader("Grafica de Puntos")
+                st.pyplot(fig)
+            elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
+                st.subheader("Predicción de Tendencia")
+                st.success(linear_regression.predict(polinomial.fit_transform([[int(unidadPre)]])))
+            elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
 
-        elif(algoritmos == 'Regresión lineal'):
-            print("Regresión polinomial")
+                polinimio= 'Y ='
+                gra=int(grado)
+                for poli in linear_regression.coef_:
+                    polinimio = polinimio +  '+' + str(poli) + 'X^' + str(gra) 
+                    gra=gra-1
+                #print(polinimio)               
+                st.subheader("Función Polinomial")
+                st.success(polinimio)
+                st.success("Error Cuadratico Medio: " + str(mean_squared_error(VarY, Y_pred, squared=False)))
+                st.success("Raíz del Error Cuadratico Medio: "+ str(np.sqrt(mean_squared_error(VarY, Y_pred, squared=False))))
+                st.success("Coeficiente de Determinacion R2: " + str(r2_score(VarY, Y_pred)))
+                
+
+            elif(ope == 'Clasificar por Gauss o árboles de decisión o redes neuronales'):
+                st.error("Operación no validad para este Algoritmo")
+            else:
+                st.error("No selecciono ninguna Operación") 
+
 
         #Algoritmo de Clasificador Gaussiano
         elif(algoritmos== 'Clasificador Gaussiano'):
