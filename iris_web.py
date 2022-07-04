@@ -1,9 +1,18 @@
 #import librerias
+from codecs import strict_errors
 from os import sep
 from click import option
+from sklearn.metrics import r2_score
+from sklearn.linear_model import LinearRegression;
+from sklearn.metrics import mean_squared_error, r2_score;
+
+import matplotlib.pyplot as plt;
 import streamlit as st
 import pickle
 import pandas as pd 
+import os
+import numpy as np;
+
 
 #extraer archivos pickle
 with open('lin_reg.pkl', 'rb')as li:
@@ -27,39 +36,84 @@ def classify(num):
     
 
 def main():
-    st.title('Modelamiento de Iris by Sara')
+    st.title('Proyecto 2')
+    st.subheader("Sara Paulina Medrano Cojulún   201908053") 
 
-    st.sidebar.header('User Input Parameters')
+    uploaded_files = st.file_uploader("Cargue el Archivo de Entrada",  accept_multiple_files=True)
+    print(uploaded_files)
+    for uploaded_file in uploaded_files:
+        name = uploaded_file.name
+        print(name)
 
-    def user_input_parameters():
-        sepal_length =st.sidebar.slider('Sepal length', 4.3, 7.9, 5.4)
-        sepal_width =st.sidebar.slider('Sepal width', 2.0, 4.4, 3.4)
-        petal_length =st.sidebar.slider('Petal length', 1.0, 6.9, 1.3)
-        petal_width =st.sidebar.slider('Petal width', 0.1, 2.5, 0.2)
-        data = {'sepal_length':sepal_length,
-                'Sepal width':sepal_width,
-                'Petal length':petal_length,
-                'Petal width':petal_width,
-                }
-        features=pd.DataFrame(data, index=[0])
-        return features
-    df=user_input_parameters()
-    #escoger el modelo
-    option = ['Linear Regression', 'Logistic Regression', 'SVM']
-    model= st.sidebar.selectbox('Which model you lije to use?', option)
+    algoritmos = st.selectbox("Algoritmos: ", 
+                     ['Seleccione una opción','Regresión lineal', 'Regresión polinomial', 'Clasificador Gaussiano', 'Clasificador de árboles de decisión', 'Redes neuronales']) 
+    ope = st.selectbox("Operaciones : ", 
+                     ['Seleccione una opción','Graficar puntos', 'Definir función de tendencia (lineal o polinomial)', 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)', 'Clasificar por Gauss o árboles de decisión o redes neuronales']) 
+    if(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
+        unidadPre= st.text_input("Ingrese la unidad de tiempo", "")
+    
+    Paramx = st.text_input("Ingrese el nombre del parametro X", "")
+    Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
+    
+    
 
-    st.subheader('User Input Parameters')
-    st.subheader(model)
-    st.write(df)
-
-    if st.button('RUN'):
-        if model == 'Linear Regression':
-            st.success(classify(lin_reg.predict(df)))
-        elif model == 'Logistic Regression':
-            st.success(classify(log_reg.predict(df)))
+    if(st.button('Generar')): 
+        result = name.title()
+        root, extension = os.path.splitext(result)
+        print('Root:', root)
+        print('extension:', extension)  
+        if(extension.upper() == ".CSV"):
+            df = pd.read_csv(result)
+        elif(extension.upper() == ".json"):
+            df = pd.read_json(result)
+        elif(extension.upper() == ".xlsx"):
+            df = pd.read_excel(result)
         else:
-            st.success(classify(svc_m.predict(df)))
+            st.error("Tipo de Archivo no valido")
 
+        #print(df)
+        st.subheader("RESULTADOS")
 
+        if(algoritmos == 'Regresión lineal'):
+            VarX = np.asarray(df[Paramx]).reshape(-1, 1)
+            VarY = df[Paramy]
+            print("estoy en lineal")
+            linear_regression = LinearRegression()
+            linear_regression.fit(VarX, VarY)
+            Y_pred = linear_regression.predict(VarX)
+            r2=r2_score(VarY, Y_pred)
+            if(ope == 'Graficar puntos'):
+                fig = plt.figure(figsize=(12,9))
+                plt.scatter(VarX, VarY, color='green')
+                st.subheader("Grafica de Puntos")
+                st.pyplot(fig)
+            elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
+                st.subheader("Predicción de Tendencia")
+                st.success(linear_regression.predict([[int(unidadPre)]]))
+            elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
+                st.success(("Coeficiente: ", linear_regression.coef_[0]))
+                st.success(("Intercepción: ", linear_regression.intercept_))
+                st.success(("r^2: ", r2))
+                st.success(('Error cuadrático:', mean_squared_error(VarY, Y_pred)))
+             
+            elif(ope == 'Clasificar por Gauss o árboles de decisión o redes neuronales'):
+                print('op4')
+            else:
+                st.error("No selecciono ninguna Operación") 
+
+        elif(algoritmos == 'Regresión lineal'):
+            print("Regresión polinomial")
+        elif(algoritmos== 'Clasificador Gaussiano'):
+            print('Clasificador Gaussiano')
+        elif(algoritmos == 'Clasificador de árboles de decisión'):
+            print('Clasificador de árboles de decisión')
+        elif(algoritmos == 'Redes neuronales'):
+            print('Redes neuronales')
+        else:
+                st.error("No selecciono ningun algoritmo") 
+    
+     
+
+         
 if __name__ == '__main__':
     main()
