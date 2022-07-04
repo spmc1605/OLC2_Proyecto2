@@ -43,7 +43,7 @@ def main():
     print(uploaded_files)
     for uploaded_file in uploaded_files:
         name = uploaded_file.name
-        print(name)
+        
 
     algoritmos = st.selectbox("Algoritmos: ", 
                      ['Seleccione una opción','Regresión lineal', 'Regresión polinomial', 'Clasificador Gaussiano', 'Clasificador de árboles de decisión', 'Redes neuronales']) 
@@ -57,22 +57,31 @@ def main():
     
     
 
+
     if(st.button('Generar')): 
-        result = name.title()
-        root, extension = os.path.splitext(result)
+
+    #verificacion de archivo valido
+
+        #result = name.title()
+        print(name)
+        root, extension = os.path.splitext(name)
         print('Root:', root)
         print('extension:', extension)  
         if(extension.upper() == ".CSV"):
-            df = pd.read_csv(result)
+            df = pd.read_csv(name)
         elif(extension.upper() == ".json"):
-            df = pd.read_json(result)
+            df = pd.read_json(name)
         elif(extension.upper() == ".xlsx"):
-            df = pd.read_excel(result)
+            df = pd.read_excel(name)
         else:
             st.error("Tipo de Archivo no valido")
 
         #print(df)
         st.subheader("RESULTADOS")
+
+        #Algoritmos
+
+        #Algoritmo de regresion Lineal
 
         if(algoritmos == 'Regresión lineal'):
             VarX = np.asarray(df[Paramx]).reshape(-1, 1)
@@ -91,6 +100,8 @@ def main():
                 st.subheader("Predicción de Tendencia")
                 st.success(linear_regression.predict([[int(unidadPre)]]))
             elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
+                st.subheader("Función de tendencia")
+                st.success(("y = ", linear_regression.coef_[0], "x + " ,linear_regression.intercept_))
                 st.success(("Coeficiente: ", linear_regression.coef_[0]))
                 st.success(("Intercepción: ", linear_regression.intercept_))
                 st.success(("r^2: ", r2))
@@ -101,8 +112,13 @@ def main():
             else:
                 st.error("No selecciono ninguna Operación") 
 
+        #Algoritmo de regresion Polinomial
+    
+
         elif(algoritmos == 'Regresión lineal'):
             print("Regresión polinomial")
+
+        #Algoritmo de Clasificador Gaussiano
         elif(algoritmos== 'Clasificador Gaussiano'):
             print('Clasificador Gaussiano')
         elif(algoritmos == 'Clasificador de árboles de decisión'):
