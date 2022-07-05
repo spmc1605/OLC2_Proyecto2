@@ -10,7 +10,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn import preprocessing
 
 
-import matplotlib.pyplot as plt;
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, plot_tree;
 import streamlit as st
 import pickle
 import pandas as pd 
@@ -55,7 +56,7 @@ def main():
                      ['Seleccione una opción','Graficar puntos', 'Definir función de tendencia (lineal o polinomial)', 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)', 'Clasificar por Gauss o árboles de decisión o redes neuronales']) 
     if(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and (algoritmos == 'Regresión polinomial'or algoritmos == 'Regresión lineal')):
         unidadPre= st.text_input("Ingrese la unidad de tiempo", "")
-    elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and algoritmos == 'Clasificador Gaussiano'):
+    elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and (algoritmos == 'Clasificador Gaussiano')):
          unidadPre= st.text_input("Ingrese los valores de predicción separados por coma", "")
 
     if(algoritmos == 'Regresión polinomial'):
@@ -64,7 +65,7 @@ def main():
     if(algoritmos == 'Regresión polinomial'or algoritmos == 'Regresión lineal'):
         Paramx = st.text_input("Ingrese el nombre del parametro X", "")
         Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
-    if(algoritmos == 'Clasificador Gaussiano'):
+    if(algoritmos == 'Clasificador Gaussiano' or algoritmos =='Clasificador de árboles de decisión' ):
         Paramx = st.text_input("Ingrese la lista de Parametros para X dependiendo de su archivo de entrada", "Ej: val1, val2, val3....valn")
         Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
         
@@ -203,6 +204,37 @@ def main():
 
         #Algoritmo de Clasificador de árboles de decisión
         elif(algoritmos == 'Clasificador de árboles de decisión'):
+            valoresX=Paramx.split(sep=',')
+            le=preprocessing.LabelEncoder()
+            print(valoresX)
+            array2=[]
+            for array1 in valoresX:
+                array2.append(le.fit_transform(df[array1].to_numpy()))
+            
+            Xaux=list(zip(*array2))
+            print(Xaux)
+            VarX = np.array(Xaux)
+            VarY = np.array(df[Paramy])
+
+            print(VarX)
+            print(VarY)
+            
+            
+            if(ope == 'Graficar puntos'):
+                fig = plt.figure(figsize=(12,9))
+                clf= DecisionTreeClassifier().fit(VarX, VarY)
+                plot_tree(clf,filled=True )
+                st.subheader("Grafica de Puntos")
+                st.pyplot(fig)
+
+            elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
+                st.error("Operación no validad para este Algoritmo")
+            elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
+                st.error("Operación no validad para este Algoritmo")
+            elif(ope == 'Clasificar por Gauss o árboles de decisión o redes neuronales'):
+                st.error("Operación no validad para este Algoritmo")
+            else:
+                st.error("No selecciono ninguna Operación") 
             print('Clasificador de árboles de decisión')
 
         #Algoritmo de Redes neuronales
