@@ -8,7 +8,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error, r2_score;
 from sklearn.naive_bayes import GaussianNB
 from sklearn import preprocessing
-
+from sklearn.neural_network import MLPClassifier
 
 import matplotlib.pyplot as plt
 from sklearn.tree import DecisionTreeClassifier, plot_tree;
@@ -56,7 +56,7 @@ def main():
                      ['Seleccione una opción','Graficar puntos', 'Definir función de tendencia (lineal o polinomial)', 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)', 'Clasificar por Gauss o árboles de decisión o redes neuronales']) 
     if(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and (algoritmos == 'Regresión polinomial'or algoritmos == 'Regresión lineal')):
         unidadPre= st.text_input("Ingrese la unidad de tiempo", "")
-    elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and (algoritmos == 'Clasificador Gaussiano')):
+    elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)' and (algoritmos == 'Clasificador Gaussiano' or algoritmos=='Redes neuronales' )):
          unidadPre= st.text_input("Ingrese los valores de predicción separados por coma", "")
 
     if(algoritmos == 'Regresión polinomial'):
@@ -65,7 +65,7 @@ def main():
     if(algoritmos == 'Regresión polinomial'or algoritmos == 'Regresión lineal'):
         Paramx = st.text_input("Ingrese el nombre del parametro X", "")
         Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
-    if(algoritmos == 'Clasificador Gaussiano' or algoritmos =='Clasificador de árboles de decisión' ):
+    if(algoritmos == 'Clasificador Gaussiano' or algoritmos =='Clasificador de árboles de decisión' or algoritmos=='Redes neuronales'):
         Paramx = st.text_input("Ingrese la lista de Parametros para X dependiendo de su archivo de entrada", "Ej: val1, val2, val3....valn")
         Paramy = st.text_input("Ingrese el nombre del parametro Y", "")
         
@@ -235,14 +235,47 @@ def main():
                 st.error("Operación no validad para este Algoritmo")
             else:
                 st.error("No selecciono ninguna Operación") 
-            print('Clasificador de árboles de decisión')
+           
 
         #Algoritmo de Redes neuronales
         elif(algoritmos == 'Redes neuronales'):
-            print('Redes neuronales')
-        else:
-                st.error("No selecciono ningun algoritmo") 
-    
+            valoresX=Paramx.split(sep=',')
+            le=preprocessing.LabelEncoder()
+            print(valoresX)
+            array2=[]
+            for array1 in valoresX:
+                array2.append(le.fit_transform(df[array1].to_numpy()))
+            
+            Xaux=list(zip(*array2))
+            print(Xaux)
+            VarX = np.array(Xaux)
+            VarY = np.array(df[Paramy])
+
+            print(VarX)
+            print(VarY)
+            mlp=MLPClassifier(hidden_layer_sizes=(10,10,10), max_iter=500, alpha=0.001, solver='adam', random_state=21, tol=0.00000001)
+            mlp.fit(VarX, VarY)
+            
+            if(ope == 'Graficar puntos'):
+                st.error("Operación no validad para este Algoritmo")
+            elif(ope == 'Definir función de tendencia (lineal o polinomial)'):
+                st.error("Operación no validad para este Algoritmo")
+            elif(ope == 'Realizar predicción de la tendencia (según unidad de tiempo ingresada)'):
+                listaPre=unidadPre.split(sep=',')
+                print(listaPre)
+                pre2=[]
+                for li in listaPre:
+                    pre2.append(float(li))
+                print(pre2)
+                predi=mlp.predict([pre2])
+                st.subheader("Predicción de Tendencia")
+                st.success(predi)
+            elif(ope == 'Clasificar por Gauss o árboles de decisión o redes neuronales'):
+                st.error("Operación no validad para este Algoritmo")
+            else:
+                st.error("No selecciono ninguna Operación") 
+
+           
      
 
          
